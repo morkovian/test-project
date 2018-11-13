@@ -1,30 +1,37 @@
 This is a MoneyTransfer test project.
 It is a standalone web application running on embedded Tomcat.
-
-To generate the app:
+<br/>
+To generate the app:<br/>
 $ mvn package
-
-Run this application on Mac and Linux:
+<br/>
+Run this application on Mac and Linux:<br/>
 $ sh target/bin/webapp
-
-On Windows the command is:
+<br/>
+On Windows the command is:<br/>
 C:/> target/bin/webapp.bat
 
 The application should start up on port 8080. 
 REST service is running at
-http://localhost:8080/rest/moneytransfer
-it accepts POSTs with following JSON
+<b>http://localhost:8080/rest/moneytransfer</b>
+it accepts POST requests with following sample JSON
+<pre>
 {	
-	"account":null,
-	"amount":null,
-	"description":null,
-	"originBank":null,
-	"originAccount":null,
+	"account":"1",
+	"amount":"100",
+	"description":"Transfer from USD to GBP account",
+	"originBank":"REVOLUT",
+	"originAccount":"2",
 	"currency": "USD"|"RUR"|"EURO"|"GBP"
 }
+</pre>
 
-Current MY_BANK_ID = "REVOLUT". If you supply it in originBank, then transfer will be internal bank transfer with both account and originAccount being validated.
-There is following test data setup:
+<br/>
+GET <b>http://localhost:8080/rest/moneytransfer/debug</b> will return full information about available accounts
+
+Current MY_BANK_ID = "REVOLUT". 
+If you supply it in originBank, then transfer will be internal bank transfer with both account and originAccount getting validated.
+There is following test data setup:		
+<pre>		
 		Customer ivanov = new Customer("Ivan", "Ivanovich", "Ivanov");
 		ivanov.setId("A");
 		
@@ -43,5 +50,5 @@ There is following test data setup:
 		account.setId("3");
 		account = new Account(petrov, Currency.EURO);
 		account.setId("4");
-
+</pre>
 		
