@@ -1,12 +1,12 @@
 This is a MoneyTransfer test project.
 It is a standalone web application running on embedded Tomcat.
-<br/>
+<br/><br/>
 To generate the app:<br/>
 $ mvn package
-<br/>
+<br/><br/>
 Run this application on Mac and Linux:<br/>
 $ sh target/bin/webapp
-<br/>
+<br/><br/>
 On Windows the command is:<br/>
 C:/> target/bin/webapp.bat
 
@@ -28,9 +28,12 @@ it accepts POST requests with following sample JSON
 <br/>
 GET <b>http://localhost:8080/rest/moneytransfer/debug</b> will return full information about available accounts
 
-Current MY_BANK_ID = "REVOLUT". 
+<br/>
+<br/>
+Current MY_BANK_ID = "REVOLUT". <br/>
 If you supply it in originBank, then transfer will be internal bank transfer with both account and originAccount getting validated.
-There is following test data setup:		
+<br/>
+There is following test data preloaded:		
 <pre>		
 		Customer ivanov = new Customer("Ivan", "Ivanovich", "Ivanov");
 		ivanov.setId("A");
