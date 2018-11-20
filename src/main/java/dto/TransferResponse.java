@@ -1,5 +1,7 @@
 package dto;
 
+import java.math.BigDecimal;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,14 +13,14 @@ public class TransferResponse {
 	
 	private boolean successStatus;
 	private String errorMessage;
-	private Float newAccountBalance;
+	private BigDecimal newAccountBalance;
 
 
 	public TransferResponse() {
 		super();
 	}
 	//success
-	public TransferResponse(Float newAccountBalance) {
+	public TransferResponse(BigDecimal newAccountBalance) {
 		super();
 		this.successStatus = true;
 		this.newAccountBalance = newAccountBalance;
@@ -39,7 +41,7 @@ public class TransferResponse {
 		return errorMessage;
 	}
 
-	public Float getNewAccountBalance() {
+	public BigDecimal getNewAccountBalance() {
 		return newAccountBalance;
 	}
 

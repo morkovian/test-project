@@ -7,12 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import javax.inject.Singleton;
-
 import model.Account;
 import model.Customer;
 
-@Singleton
 public class AccountDAO {
 	private final ConcurrentMap<String, Account> accountMap;
 	
@@ -35,10 +32,7 @@ public class AccountDAO {
 
 			account.setId(nextId.toString());			
 		}
-		// If we get a non null value that means the account already exists in the Map.
-        if (null != accountMap.putIfAbsent(account.getId(), account)) {
-            return null;
-        }
+		accountMap.put(account.getId(), account);
         return account;
 	}
 	

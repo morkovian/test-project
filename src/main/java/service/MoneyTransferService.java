@@ -1,9 +1,7 @@
 package service;
 
+import java.math.BigDecimal;
 import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,7 +15,6 @@ import model.Currency;
 import model.Customer;
 import model.Transaction;
 
-@Singleton
 public class MoneyTransferService {
 
 	public static final String MY_BANK_ID = "REVOLUT";
@@ -26,7 +23,6 @@ public class MoneyTransferService {
 	private final TransactionDAO transactionDAO;
 	private final CurrencyExchangeService currencyExchangeService;
 	
-	@Inject
 	private MoneyTransferService(AccountDAO accountDAO, TransactionDAO transactionDAO,
 			CurrencyExchangeService currencyExchangeService) {
 		super();
@@ -44,7 +40,7 @@ public class MoneyTransferService {
 		if (account == null || account.getStatus() != Account.AccountStatus.OPEN)
 			return new TransferResponse("Account not found");
 		
-		if (request.getAccount() == null || request.getAmount() <= 0)
+		if (request.getAccount() == null || request.getAmount().compareTo(new BigDecimal(0)) < 0)
 			return new TransferResponse("Amount has to be greater than 0");
 
 		if (request.getCurrency() == null || Currency.fromString(request.getCurrency()) == null)
@@ -55,24 +51,7 @@ public class MoneyTransferService {
 		debitTx.setTransactionType(Transaction.TransactionType.DEBIT);
 		debitTx.setDescription(request.getDescription());
 		
-		//if bank is ours, then validate originAccountId as well
 		String originAccountId = request.getOriginAccount();
-		if (MY_BANK_ID.equals(request.getOriginBank())) {
-			Account originAccount = accountDAO.getAccount(originAccountId);
-			if (originAccount == null || originAccount.getStatus() != Account.AccountStatus.OPEN)
-				return new TransferResponse("From Account not found");
-			if (originAccount.getBalance() < request.getAmount())
-				return new TransferResponse("Insufficient funds in the From Account");
-			
-			
-			Transaction creditTx = new Transaction();
-			creditTx.setAccount(originAccount);
-			creditTx.setTransactionType(Transaction.TransactionType.CREDIT);
-			creditTx.setDescription(request.getDescription());
-			creditTx.setAmount(request.getAmount());
-			transactionDAO.saveTransaction(creditTx);
-			calculateAccountBalance(originAccount);
-		}
 		debitTx.setOriginAccountId(originAccountId);
 		debitTx.setOriginBankId(request.getOriginBank());
 		debitTx.setOriginCurrency(Currency.fromString(request.getCurrency()));
@@ -82,20 +61,41 @@ public class MoneyTransferService {
 		else
 			debitTx.setAmount(request.getAmount());
 		
-		transactionDAO.saveTransaction(debitTx);
+		//if bank is ours, then validate originAccountId as well
+		if (MY_BANK_ID.equals(request.getOriginBank())) {
+			Account originAccount = accountDAO.getAccount(originAccountId);
+			if (originAccount == null || originAccount.getStatus() != Account.AccountStatus.OPEN)
+				return new TransferResponse("From Account not found");
+			
+			Transaction creditTx = new Transaction();
+			creditTx.setAccount(originAccount);
+			creditTx.setTransactionType(Transaction.TransactionType.CREDIT);
+			creditTx.setDescription(request.getDescription());
+			creditTx.setAmount(request.getAmount());
+
+			synchronized (originAccount) {
+				if (originAccount.getBalance().compareTo(request.getAmount()) < 0)
+					return new TransferResponse("Insufficient funds in the From Account");
+				transactionDAO.saveTransaction(creditTx);
+				calculateAccountBalance(originAccount);
+			}
+		}
 		
-		return new TransferResponse(calculateAccountBalance(account));
+		synchronized (account) {
+			transactionDAO.saveTransaction(debitTx);
+			return new TransferResponse(calculateAccountBalance(account));
+		}
 	}
 	
 	
-	private synchronized Float calculateAccountBalance(Account account) {
+	private BigDecimal calculateAccountBalance(Account account) {
 		List<Transaction> txs = transactionDAO.listTransactions(account);
-		Float balance = 0f;
+		BigDecimal balance = new BigDecimal(0);
 		for (Transaction transaction : txs) {
 			if (transaction.getTransactionType() == Transaction.TransactionType.DEBIT)
-				balance += transaction.getAmount();
+				balance = balance.add(transaction.getAmount());
 			else
-				balance -= transaction.getAmount();
+				balance = balance.subtract(transaction.getAmount());
 		}
 		account.setBalance(balance);
 		accountDAO.saveAccount(account);

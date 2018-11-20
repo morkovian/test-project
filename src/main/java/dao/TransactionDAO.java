@@ -7,12 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import javax.inject.Singleton;
-
 import model.Account;
 import model.Transaction;
 
-@Singleton
 public class TransactionDAO {
 	private final ConcurrentMap<String, Transaction> transactionMap;
 	
@@ -35,10 +32,7 @@ public class TransactionDAO {
 
 			tx.setId(nextId.toString());			
 		}
-		// If we get a non null value that means the Transaction already exists in the Map.
-        if (null != transactionMap.putIfAbsent(tx.getId(), tx)) {
-            return null;
-        }
+		transactionMap.put(tx.getId(), tx);
         return tx;
 	}
 	

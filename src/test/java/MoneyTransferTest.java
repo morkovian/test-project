@@ -1,6 +1,8 @@
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
+import java.math.BigDecimal;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
@@ -34,7 +36,7 @@ public class MoneyTransferTest extends JerseyTest {
     public void testCashDeposit() throws Exception {
         TransferRequest request = new TransferRequest();
         request.setAccount("1");
-        request.setAmount(100f);
+        request.setAmount(new BigDecimal(100));
         request.setCurrency("USD");
         request.setOriginBank("ALFA");
         request.setOriginAccount("12345");
@@ -48,7 +50,7 @@ public class MoneyTransferTest extends JerseyTest {
         assertNotNull("Should return transfer response", output.getEntity());
         ObjectMapper mapper = new ObjectMapper();
         TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
-        assertEquals("Balance should be right", new Float(100f), response.getNewAccountBalance());
+        assertEquals("Balance should be right", new BigDecimal(100f), response.getNewAccountBalance());
     }
 
     
@@ -56,7 +58,7 @@ public class MoneyTransferTest extends JerseyTest {
     public void testCashDepositGBPintoEUROS() throws Exception {
         TransferRequest request = new TransferRequest();
         request.setAccount("2");
-        request.setAmount(100f);
+        request.setAmount(new BigDecimal(100));
         request.setCurrency("GBP");
         request.setOriginBank("ALFA");
         request.setOriginAccount("12345");
@@ -71,7 +73,7 @@ public class MoneyTransferTest extends JerseyTest {
         ObjectMapper mapper = new ObjectMapper();
         TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
         CurrencyExchangeService exService = new CurrencyExchangeService();
-        Float expected = exService.exchange(request.getAmount(), Currency.GBP, Currency.EURO);
+        BigDecimal expected = exService.exchange(request.getAmount(), Currency.GBP, Currency.EURO);
         assertEquals("Balance should be right", expected, response.getNewAccountBalance());
     }
 
@@ -80,7 +82,7 @@ public class MoneyTransferTest extends JerseyTest {
     	//first deposit some money
         TransferRequest request = new TransferRequest();
         request.setAccount("1");
-        request.setAmount(100f);
+        request.setAmount(new BigDecimal(100));
         request.setCurrency("USD");
         request.setOriginBank("ALFA");
         request.setOriginAccount("12345");
@@ -95,7 +97,7 @@ public class MoneyTransferTest extends JerseyTest {
         //now transfer it to another account
         request = new TransferRequest();
         request.setAccount("3");
-        request.setAmount(100f);
+        request.setAmount(new BigDecimal(100));
         request.setCurrency("USD");
         request.setOriginBank("REVOLUT");
         request.setOriginAccount("1");
@@ -110,7 +112,7 @@ public class MoneyTransferTest extends JerseyTest {
         ObjectMapper mapper = new ObjectMapper();
         TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
         CurrencyExchangeService exService = new CurrencyExchangeService();
-        Float expected = exService.exchange(request.getAmount(), Currency.USD, Currency.GBP);
+        BigDecimal expected = exService.exchange(request.getAmount(), Currency.USD, Currency.GBP);
         assertEquals("Balance should be right", expected, response.getNewAccountBalance());
         
         target("/moneytransfer/debug").request().get();

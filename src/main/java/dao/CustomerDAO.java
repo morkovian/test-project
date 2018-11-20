@@ -6,11 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import javax.inject.Singleton;
-
 import model.Customer;
 
-@Singleton
 public class CustomerDAO {
 	private final ConcurrentMap<String, Customer> customerMap;
 	
@@ -31,10 +28,7 @@ public class CustomerDAO {
 
 			customer.setId(nextId.toString());			
 		}
-		// If we get a non null value that means the Customer already exists in the Map.
-        if (null != customerMap.putIfAbsent(customer.getId(), customer)) {
-            return null;
-        }
+        customerMap.put(customer.getId(), customer);
         return customer;
 	}
 	

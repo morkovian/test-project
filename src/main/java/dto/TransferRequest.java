@@ -1,4 +1,7 @@
 package dto;
+
+import java.math.BigDecimal;
+
 /**
  * Used as request parameter to Money Transfer Servlet
  * @author vchernou
@@ -6,7 +9,7 @@ package dto;
  */
 public class TransferRequest {
 	private String account;
-	private Float amount;
+	private BigDecimal amount;
 	private String currency;
 	private String description;
 
@@ -19,10 +22,10 @@ public class TransferRequest {
 	public void setAccount(String account) {
 		this.account = account;
 	}
-	public Float getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
-	public void setAmount(Float amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 	public String getDescription() {

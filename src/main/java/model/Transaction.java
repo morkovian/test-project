@@ -1,5 +1,6 @@
 package model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class Transaction {
@@ -10,12 +11,12 @@ public class Transaction {
 	private Date transactionDate;
 	
 	private Account account;
-	private Float amount;
+	private BigDecimal amount;
 	private String description;
 
 	private String originBankId;
 	private String originAccountId;
-	private Float originAmount;
+	private BigDecimal originAmount;
 	private Currency originCurrency;
 	
 	public Transaction() {
@@ -43,10 +44,10 @@ public class Transaction {
 	public void setAccount(Account account) {
 		this.account = account;
 	}
-	public Float getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
-	public void setAmount(Float amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 	public String getDescription() {
@@ -67,10 +68,10 @@ public class Transaction {
 	public void setOriginAccountId(String originAccountId) {
 		this.originAccountId = originAccountId;
 	}
-	public Float getOriginAmount() {
+	public BigDecimal getOriginAmount() {
 		return originAmount;
 	}
-	public void setOriginAmount(Float originAmount) {
+	public void setOriginAmount(BigDecimal originAmount) {
 		this.originAmount = originAmount;
 	}
 	public Currency getOriginCurrency() {

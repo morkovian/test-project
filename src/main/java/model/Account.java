@@ -1,5 +1,6 @@
 package model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -20,7 +21,7 @@ public class Account {
 	
 	private AccountStatus status;
 	
-	private Float balance = 0f;
+	private BigDecimal balance = new BigDecimal(0);
 	
 	public Account(Customer customer, Currency currency) {
 		super();
@@ -46,11 +47,11 @@ public class Account {
 		this.status = status;
 	}
 
-	public Float getBalance() {
+	public BigDecimal getBalance() {
 		return balance;
 	}
 
-	public void setBalance(Float balance) {
+	public void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
 
