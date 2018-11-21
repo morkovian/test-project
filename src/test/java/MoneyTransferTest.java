@@ -117,4 +117,121 @@ public class MoneyTransferTest extends JerseyTest {
         
         target("/moneytransfer/debug").request().get();
     }
+    
+    @Test
+    public void testInsufficientFundsTransferError() throws Exception {
+    	//first deposit some money
+        TransferRequest request = new TransferRequest();
+        request.setAccount("1");
+        request.setAmount(new BigDecimal(100));
+        request.setCurrency("USD");
+        request.setOriginBank("ALFA");
+        request.setOriginAccount("12345");
+        request.setDescription("Deposit cash through ATM");
+
+        Response output = target("/moneytransfer")
+                .request()
+                .post(Entity.entity(request, MediaType.APPLICATION_JSON));
+
+        assertEquals("Should return status 200", 200, output.getStatus());
+        
+        //now transfer it to another account
+        request = new TransferRequest();
+        request.setAccount("3");
+        request.setAmount(new BigDecimal(300));
+        request.setCurrency("USD");
+        request.setOriginBank("REVOLUT");
+        request.setOriginAccount("1");
+
+        output = target("/moneytransfer")
+                .request()
+                .post(Entity.entity(request, MediaType.APPLICATION_JSON));
+
+        assertEquals("Should return status 200", 200, output.getStatus());
+        assertNotNull("Should return transfer response", output.getEntity());
+        ObjectMapper mapper = new ObjectMapper();
+        TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
+        assertEquals("Insufficient fund message", "Insufficient funds in the From Account", response.getErrorMessage());
+    }
+    
+    @Test
+    public void testFromAccountNotFoundError() throws Exception {
+    	TransferRequest request = new TransferRequest();
+        request.setAccount("3");
+        request.setAmount(new BigDecimal(300));
+        request.setCurrency("USD");
+        request.setOriginBank("REVOLUT");
+        request.setOriginAccount("1NOTEXISTENT");
+
+        Response output = target("/moneytransfer")
+                .request()
+                .post(Entity.entity(request, MediaType.APPLICATION_JSON));
+
+        assertEquals("Should return status 200", 200, output.getStatus());
+        assertNotNull("Should return transfer response", output.getEntity());
+        ObjectMapper mapper = new ObjectMapper();
+        TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
+        assertEquals("From Account not found message", "From Account not found", response.getErrorMessage());
+    }
+    
+    
+    @Test
+    public void testAccountNotFoundError() throws Exception {
+    	TransferRequest request = new TransferRequest();
+        request.setAccount("3NONEXISTENT");
+        request.setAmount(new BigDecimal(300));
+        request.setCurrency("USD");
+        request.setOriginBank("REVOLUT");
+        request.setOriginAccount("1");
+
+        Response output = target("/moneytransfer")
+                .request()
+                .post(Entity.entity(request, MediaType.APPLICATION_JSON));
+
+        assertEquals("Should return status 200", 200, output.getStatus());
+        assertNotNull("Should return transfer response", output.getEntity());
+        ObjectMapper mapper = new ObjectMapper();
+        TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
+        assertEquals("Account not found message", "Account not found", response.getErrorMessage());
+    }
+    
+    @Test
+    public void testInvalidAmountError() throws Exception {
+    	TransferRequest request = new TransferRequest();
+        request.setAccount("3");
+        request.setAmount(new BigDecimal(-300));
+        request.setCurrency("USD");
+        request.setOriginBank("REVOLUT");
+        request.setOriginAccount("1");
+
+        Response output = target("/moneytransfer")
+                .request()
+                .post(Entity.entity(request, MediaType.APPLICATION_JSON));
+
+        assertEquals("Should return status 200", 200, output.getStatus());
+        assertNotNull("Should return transfer response", output.getEntity());
+        ObjectMapper mapper = new ObjectMapper();
+        TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
+        assertEquals("Amount has to be greater than 0 message", "Amount has to be greater than 0", response.getErrorMessage());
+    }
+    
+    @Test
+    public void testCurrencyMissingError() throws Exception {
+    	TransferRequest request = new TransferRequest();
+        request.setAccount("3");
+        request.setAmount(new BigDecimal(300));
+        request.setCurrency("JPY");
+        request.setOriginBank("REVOLUT");
+        request.setOriginAccount("1");
+
+        Response output = target("/moneytransfer")
+                .request()
+                .post(Entity.entity(request, MediaType.APPLICATION_JSON));
+
+        assertEquals("Should return status 200", 200, output.getStatus());
+        assertNotNull("Should return transfer response", output.getEntity());
+        ObjectMapper mapper = new ObjectMapper();
+        TransferResponse response = mapper.readValue(output.readEntity(String.class), TransferResponse.class);
+        assertEquals("Currency is missing message", "Currency is missing", response.getErrorMessage());
+    }
 }
